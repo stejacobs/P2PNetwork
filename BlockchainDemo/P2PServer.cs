@@ -51,10 +51,10 @@ namespace BCTestDemo
                     case "3":
                     
                         Program.BCDemo.InitializeChain();
-                    var obj = JsonConvert.SerializeObject(Program.BCDemo, Formatting.Indented);
+                        var obj = JsonConvert.SerializeObject(Program.BCDemo, Formatting.Indented);
                         Console.WriteLine(obj);
 
-                        Send(obj);
+                        Send("<p>Blockchain JSON</p>" + obj);
                         break;
                     case "2":
                         string[] x = e.Data.Split(",");
@@ -94,15 +94,22 @@ namespace BCTestDemo
                         Program.BCDemo.Chain = newChain.Chain;
                         //Send("I am here");
                     }
-                        var journal = JsonConvert.SerializeObject(Program.BCDemo, Formatting.Indented);
-                       string jf = Program.JournalOutput(journal);
-                        Send(jf);
+                       // var journal = JsonConvert.SerializeObject(Program.BCDemo, Formatting.Indented);
+                       //string jf = Program.JournalOutput(journal);
+                        Send("<p>Blockchain New Transaction</p>" + receiverName + " balance:  " + recv);
 
                     if (!chainSynched)
                     {
                         //Send(JsonConvert.SerializeObject(Program.BCDemo));
                         chainSynched = true;
                     }
+                    break;
+                case "5":
+                    Program.BCDemo.InitializeChain();
+                    var jfile = Program.JournalOutput(JsonConvert.SerializeObject(Program.BCDemo, Formatting.Indented));
+                    Console.WriteLine("<p>Blockchain Journal/Ledger</p>" + jfile);
+
+                    Send(jfile);
                     break;
 
                 
