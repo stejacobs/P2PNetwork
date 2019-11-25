@@ -9,10 +9,11 @@ using WebSocketSharp.Server;
 
 namespace BCTestDemo
 {
-    public class P2PServer: WebSocketBehavior
+    public class P2PServer : WebSocketBehavior
     {
         bool chainSynched = false;
         WebSocketServer wss = null;
+        private P2PClient Client = null;
 
         public void Start()
         {
@@ -21,12 +22,17 @@ namespace BCTestDemo
             wss.AddWebSocketService<P2PServer>("/bcdemo");
             wss.Start();
             Console.WriteLine($"Started server at ws://127.0.0.1:{Program.Port}");
-            
+         Client = new P2PClient();
+
         }
 
         protected override void OnMessage(MessageEventArgs e)
         {
-            
+            if (Client == null)
+            {
+                Client = new P2PClient();
+            }
+
             if (e.Data.Contains("Hi Server"))
             {
                 Console.WriteLine(e.Data);
@@ -34,19 +40,83 @@ namespace BCTestDemo
             }
             else
             {
-                Blockchain newChain = JsonConvert.DeserializeObject<Blockchain>(e.Data);
+               
+            }
 
-                if (newChain.IsValid() && newChain.Chain.Count > Program.BCDemo.Chain.Count)
-                {
-                    Program.BCDemo.Chain = newChain.Chain;
-                }
 
-                if (!chainSynched)
+            string[] selection = e.Data.Split(",");
+           
+                switch (selection[0])
                 {
-                    Send(JsonConvert.SerializeObject(Program.BCDemo));
-                    chainSynched = true;
-                }
+                    case "3":
+                    
+                        Program.BCDemo.InitializeChain();
+                    var obj = JsonConvert.SerializeObject(Program.BCDemo, Formatting.Indented);
+                        Console.WriteLine(obj);
+
+                        Send(obj);
+                        break;
+                    case "2":
+                        string[] x = e.Data.Split(",");
+
+                        string name = x[1];
+                        string receiverName = x[2];
+                        string amount = x[3];
+                        string ownerName = x[4];
+
+
+                        Program.BCDemo.CreateTransaction(new Transaction(name, receiverName, int.Parse(amount),
+                            ownerName));
+                        Program.BCDemo.ProcessPendingTransactions(name, receiverName, ownerName);
+
+                        int prime = Program.BCDemo.GetBalance(name);
+                        int recv = Program.BCDemo.GetBalance(receiverName);
+
+                        if (prime < 0)
+                        {
+                            Console.WriteLine(name + " negative balance:  " + prime);
+                        }
+                        else
+                        {
+                            Console.WriteLine(name + " balance:  " + prime);
+
+                        }
+
+                        Console.WriteLine(receiverName + " balance:  " + recv);
+                        //Send(JsonConvert.SerializeObject(Program.BCDemo));
+                      
+                        
+                        Client.Broadcast(JsonConvert.SerializeObject(Program.BCDemo));
+                    Blockchain newChain = JsonConvert.DeserializeObject<Blockchain>(JsonConvert.SerializeObject(Program.BCDemo));
+
+                    if (newChain.IsValid() && newChain.Chain.Count > Program.BCDemo.Chain.Count)
+                    {
+                        Program.BCDemo.Chain = newChain.Chain;
+                        //Send("I am here");
+                    }
+                        var journal = JsonConvert.SerializeObject(Program.BCDemo, Formatting.Indented);
+                       string jf = Program.JournalOutput(journal);
+                        Send(jf);
+
+                    if (!chainSynched)
+                    {
+                        //Send(JsonConvert.SerializeObject(Program.BCDemo));
+                        chainSynched = true;
+                    }
+                    break;
+
+                
             }
         }
     }
 }
+
+        
+
+
+
+
+
+
+        
+           

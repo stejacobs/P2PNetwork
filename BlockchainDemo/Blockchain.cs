@@ -19,8 +19,11 @@ namespace BCTestDemo
 
         public void InitializeChain()
         {
-            Chain = new List<Block>();
-            AddGenesisBlock();
+            if (Chain == null)
+            {
+                Chain = new List<Block>();
+                AddGenesisBlock();
+            }
         }
 
         public Block CreateGenesisBlock()

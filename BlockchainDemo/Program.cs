@@ -121,8 +121,9 @@ namespace BCTestDemo
             }
         }
 
-        private static void JournalOutput(string obj)
+        public static string JournalOutput(string obj)
         {
+            var result = "";
             Console.WriteLine(Environment.NewLine + "Journal Output");
 
             RootObject ro = JsonConvert.DeserializeObject<RootObject>(obj);
@@ -130,11 +131,13 @@ namespace BCTestDemo
             {
                 foreach (var trn in cn.Transactions)
                 {
-                    //var result = trn.transid + "," + trn.FromAddress + "," + trn.ToAddress + "," + trn.OwnerName + "," + trn.Amount;
+                    result += trn.transid + "," + trn.FromAddress + "," + trn.ToAddress + "," + trn.OwnerName + "," + trn.Amount + "<br>";
                     Console.WriteLine("\n{0}", trn.transid + "," + trn.FromAddress + "," +
                                                trn.ToAddress + "," + trn.OwnerName + "," + trn.Amount);
                 }
             }
+
+            return result.ToString();
         }
     }
 }
