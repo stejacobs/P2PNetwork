@@ -92,7 +92,7 @@ namespace BCTestDemo
                     if (newChain.IsValid() && newChain.Chain.Count > Program.BCDemo.Chain.Count)
                     {
                         Program.BCDemo.Chain = newChain.Chain;
-                        //Send("I am here");
+                        Send("I am here");
                     }
                        // var journal = JsonConvert.SerializeObject(Program.BCDemo, Formatting.Indented);
                        //string jf = Program.JournalOutput(journal);
