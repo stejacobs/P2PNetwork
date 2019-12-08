@@ -8,14 +8,14 @@ namespace BCTestDemo
 {
     public class P2PClient
     {
-        IDictionary<string, WebSocket> wsDict = new Dictionary<string, WebSocket>();
+       public static   IDictionary<string, WebSocket> wsDict = new Dictionary<string, WebSocket>();
 
-        public void Connect(string url)
+        public static void Connect(string url)
         {
             if (!wsDict.ContainsKey(url))
             {
                 WebSocket ws = new WebSocket(url);
-                ws.OnMessage += (sender, e) => 
+                ws.OnMessage += (sender, e) =>
                 {
                     if (e.Data.Contains("Hi Client"))
                     {
@@ -39,7 +39,7 @@ namespace BCTestDemo
                 ws.Send($"From {Program.Port}: Hi Server");
                 ws.Send(JsonConvert.SerializeObject(Program.BCDemo));
                 wsDict.Add(url, ws);
-               
+
             }
         }
 
@@ -54,7 +54,7 @@ namespace BCTestDemo
             }
         }
 
-        public void Broadcast(string data)
+        public static  void Broadcast(string data)
         {
             foreach (var item in wsDict)
             {

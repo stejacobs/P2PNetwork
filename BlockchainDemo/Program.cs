@@ -46,7 +46,7 @@ namespace BCTestDemo
                         string serverURL = Console.ReadLine();
                         if (serverURL == "0")
                             break;
-                        Client.Connect($"{serverURL}/bcdemo");
+                        P2PClient.Connect($"{serverURL}/bcdemo");
                         break;
                     case 2:
                         Console.WriteLine("Please enter the office name (enter 0 to cancel the operation)");
@@ -82,7 +82,7 @@ namespace BCTestDemo
 
                         Console.WriteLine(receiverName + " balance:  " + recv);
 
-                        Client.Broadcast(JsonConvert.SerializeObject(BCDemo));
+                        P2PClient.Broadcast(JsonConvert.SerializeObject(BCDemo));
                         break;
                     case 3:
                         Console.WriteLine("Blockchain");

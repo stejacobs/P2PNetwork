@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BCTestDemo": {
+      "commandName": "Project",
+      "commandLineArgs": "4647 Adam"
+    }
+  }
+}

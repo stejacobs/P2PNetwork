@@ -21,6 +21,7 @@ namespace BCTestDemo
         {
             if (Chain == null)
             {
+                Console.WriteLine("I am in Init Chain");
                 Chain = new List<Block>();
                 AddGenesisBlock();
             }
