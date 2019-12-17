@@ -7,6 +7,7 @@ using System.Text;
 using WebSocketSharp;
 using WebSocketSharp.Net;
 using WebSocketSharp.Server;
+using System.Configuration;
 
 namespace BCTestDemo
 {
@@ -19,11 +20,13 @@ namespace BCTestDemo
 
         public void Start()
         {
-            wss = new WebSocketServer($"ws://127.0.0.1:{Program.Port}");
+            var ws = ConfigurationManager.AppSettings["ws"];
+            Console.WriteLine($"{ws}{Program.Port}");
+            wss = new WebSocketServer($"{ws}{Program.Port}");
             //wss.SslConfiguration.EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12;
             wss.AddWebSocketService<P2PServer>("/bcdemo");
             wss.Start();
-            Console.WriteLine($"Started server at ws://127.0.0.1:{Program.Port}");
+            Console.WriteLine($"{ws}{Program.Port}");
             Program.BCDemo.InitializeChain();
         }
 
@@ -59,37 +62,59 @@ namespace BCTestDemo
                     break;
                 case "2":
                     string[] x = e.Data.Split(",");
-                    string name = x[1];
-                    string receiverName = x[2];
-                    string amount = x[3];
-                    string ownerName = x[4];
+
+                    Transaction trans = new Transaction();
+                    trans.clip = Guid.NewGuid().ToString("N").ToUpper();
+                    trans.streetAddress = x[1];
+                    trans.city = x[2];
+                    trans.state  = x[3];
+                    trans.zip  = x[4];
+                    trans.propertyValue  = int.Parse(x[5]);
+                    trans.lender  = x[6];
+                    trans.customer = x[7];
 
 
-                    Program.BCDemo.CreateTransaction(new Transaction(name, receiverName, int.Parse(amount),
-                        ownerName));
-                    Program.BCDemo.ProcessPendingTransactions(name, receiverName, ownerName);
 
-                    int prime = Program.BCDemo.GetBalance(name);
-                    int recv = Program.BCDemo.GetBalance(receiverName);
 
-                    if (prime < 0)
-                    {
-                        Console.WriteLine(name + " negative balance:  " + prime);
-                    }
-                    else
-                    {
-                        Console.WriteLine(name + " balance:  " + prime);
 
-                    }
+                    Program.BCDemo.CreateTransaction(trans);
+                    Program.BCDemo.ProcessPendingTransactions(
+                        trans.clip,
+                        trans.streetAddress,
+                        trans.city,
+                        trans.state,
+                        trans.zip,
+                        trans.propertyValue,
+                        trans.lender,
+                        trans.customer);
 
-                    Console.WriteLine(receiverName + " balance:  " + recv);
+                    //int prime = Program.BCDemo.GetBalance(name);
+                    //int recv = Program.BCDemo.GetBalance(receiverName);
+
+                    //if (prime < 0)
+                    //{
+                    //    Console.WriteLine(name + " negative balance:  " + prime);
+                    //}
+                    //else
+                    //{
+                    //    Console.WriteLine(name + " balance:  " + prime);
+
+                    //}
+
+                    //Console.WriteLine(receiverName + " balance:  " + recv);
 
                     //Create Journal File
                     var journal = JsonConvert.SerializeObject(Program.BCDemo, Formatting.Indented);
                     string jf = Program.JournalOutput(journal);
                     Send(jf);
-                    string filename = @"c:\test\" + ownerName + "-" + DateTime.Now.ToString("yyyyMMdd") + ".json";
+                    string dir = ConfigurationManager.AppSettings["bchainpath"];
+                    if (!Directory.Exists(dir))
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
+                    string filename = dir + "CLBChain-" + DateTime.Now.ToString("mmddyyyyhhmmss") + ".json";
                     File.WriteAllText(filename, JsonConvert.SerializeObject(Program.BCDemo, Formatting.Indented));
+                    trans = null;
                     break;
                  }
 

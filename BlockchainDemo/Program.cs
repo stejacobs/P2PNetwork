@@ -1,9 +1,7 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Transactions;
+using System.Configuration;
 
 namespace BCTestDemo
 {
@@ -15,20 +13,33 @@ namespace BCTestDemo
         public static Blockchain BCDemo = new Blockchain();
         public static string name = "unknown";
 
+    
+
         static void Main(string[] args)
         {
+
             BCDemo.InitializeChain();
+
+            string ws = ConfigurationManager.AppSettings["ws"];
+            string uripath = ConfigurationManager.AppSettings["uripath"];
+            string port = ConfigurationManager.AppSettings["port"];
+            string user = ConfigurationManager.AppSettings["user"];
+            string bchainpath = ConfigurationManager.AppSettings["bchainpath"];
 
             if (args.Length >= 1)
                 Port = int.Parse(args[0]);
             if (args.Length >= 2)
                 name = args[1];
 
+            Program.Port = int.Parse(port);
+                
             if (Port > 0)
             {
                 Server = new P2PServer();
                 Server.Start();
             }
+
+            name = user;
 
             if (name != "unkown")
             {
@@ -36,6 +47,7 @@ namespace BCTestDemo
             }
 
            
+
             int selection = 0;
             while (selection != 4)
             {
@@ -46,41 +58,79 @@ namespace BCTestDemo
                         string serverURL = Console.ReadLine();
                         if (serverURL == "0")
                             break;
-                        P2PClient.Connect($"{serverURL}/bcdemo");
+                        P2PClient.Connect($"{serverURL}{uripath}");
                         break;
                     case 2:
-                        Console.WriteLine("Please enter the office name (enter 0 to cancel the operation)");
-                        string receiverName = Console.ReadLine();
-                        if (receiverName == "0")
-                            break;
-
-                        Console.WriteLine("Please enter the property owner name (enter 0 to cancel the operation)");
-                        string ownerName = Console.ReadLine();
-                        if (ownerName == "0")
-                            break;
+                        Transaction trans = new Transaction();
+                        Console.WriteLine("Please enter street address (enter 0 to cancel the operation)");
+                        trans.streetAddress  = Console.ReadLine();
+                        if (trans.streetAddress == "0")   
+                        break;
                         
-                        Console.WriteLine("Please enter the property tax amount (enter 0 to cancel the operation)");
-                        string amount = Console.ReadLine();
-                        if (amount == "0")
+                        Console.WriteLine("Please enter the city (enter 0 to cancel the operation)");
+                        trans.city = Console.ReadLine();
+                        if (trans.city == "0")
                             break;
 
-                        BCDemo.CreateTransaction(new Transaction(name, receiverName, int.Parse(amount), ownerName));
-                        BCDemo.ProcessPendingTransactions(name, receiverName, ownerName);
+                        Console.WriteLine("Please enter the state (enter 0 to cancel the operation)");
+                        trans.state = Console.ReadLine();
+                        if (trans.state == "0")
+                            break;
 
-                        int prime = BCDemo.GetBalance(name);
-                        int recv = BCDemo.GetBalance(receiverName);
 
-                        if (prime < 0)
-                        {
-                            Console.WriteLine(name + " negative balance:  " + prime);
-                        }
-                        else
-                        {
-                            Console.WriteLine(name + " balance:  " + prime);
-                           
-                        }
+                        Console.WriteLine("Please enter the zip (enter 0 to cancel the operation)");
+                        trans.zip = Console.ReadLine();
+                        if (trans.zip == "0")
+                            break;
 
-                        Console.WriteLine(receiverName + " balance:  " + recv);
+                        Console.WriteLine("Please enter the property value (enter 0 to cancel the operation)");
+                        trans.propertyValue = int.Parse(Console.ReadLine());
+                        if (trans.propertyValue == 0)
+                            break;
+
+                        Console.WriteLine("Please enter the lender (enter 0 to cancel the operation)");
+                        trans.lender  = Console.ReadLine();
+                        if (trans.lender == "0")
+                            break;
+
+                        Console.WriteLine("Please enter the customer (enter 0 to cancel the operation)");
+                        trans.customer = Console.ReadLine();
+                        if (trans.customer == "0")
+                            break;
+
+                        
+                        trans.clip = Guid.NewGuid().ToString("N").ToUpper();
+                        
+                        
+
+                        Program.BCDemo.CreateTransaction(trans);
+                        Program.BCDemo.ProcessPendingTransactions(
+                            trans.clip,
+                            trans.streetAddress,
+                            trans.city,
+                            trans.state,
+                            trans.zip,
+                            trans.propertyValue,
+                            trans.lender,
+                            trans.customer);
+
+                        //BCDemo.CreateTransaction(new Transaction(name, receiverName, int.Parse(amount), ownerName));
+                        //BCDemo.ProcessPendingTransactions(name, receiverName, ownerName);
+
+                        //int prime = BCDemo.GetBalance(name);
+                        //int recv = BCDemo.GetBalance(receiverName);
+
+                        //if (prime < 0)
+                        //{
+                        //    Console.WriteLine(name + " negative balance:  " + prime);
+                        //}
+                        //else
+                        //{
+                        //    Console.WriteLine(name + " balance:  " + prime);
+
+                        //}
+
+                        //Console.WriteLine(receiverName + " balance:  " + recv);
 
                         P2PClient.Broadcast(JsonConvert.SerializeObject(BCDemo));
                         break;
@@ -88,7 +138,12 @@ namespace BCTestDemo
                         Console.WriteLine("Blockchain");
                         var obj = JsonConvert.SerializeObject(BCDemo, Formatting.Indented);
                         Console.WriteLine(obj);
-                        string filename = @"c:\test\" + name + "-" + DateTime.Now.ToString("mmddyyyyhhmmss") + ".json";
+                       ;
+                        if (!Directory.Exists(bchainpath))
+                        {
+                        Directory.CreateDirectory(bchainpath);
+                        }
+                        string filename = bchainpath + name + "-" + DateTime.Now.ToString("mmddyyyyhhmmss") + ".json";
                         File.WriteAllText(filename, JsonConvert.SerializeObject(BCDemo, Formatting.Indented));
                         
                         JournalOutput(obj);
@@ -121,6 +176,7 @@ namespace BCTestDemo
             }
         }
 
+      
         public static string JournalOutput(string obj)
         {
             var result = "";
@@ -131,9 +187,9 @@ namespace BCTestDemo
             {
                 foreach (var trn in cn.Transactions)
                 {
-                    result += trn.transid + "," + trn.FromAddress + "," + trn.ToAddress + "," + trn.OwnerName + "," + trn.Amount + "<br>";
-                    Console.WriteLine("\n{0}", trn.transid + "," + trn.FromAddress + "," +
-                                               trn.ToAddress + "," + trn.OwnerName + "," + trn.Amount);
+                    result = trn.clip  + "," + trn.streetAddress + "," + trn.state + "," + trn.city + "," + trn.zip  + "," +
+                              trn.propertyValue + "," + trn.lender + "," + trn.customer + "~";
+                    Console.WriteLine("\n{0}", result);
                 }
             }
 

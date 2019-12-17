@@ -1,0 +1,5 @@
+﻿1>------ Rebuild All started: Project: BCTestDemo, Configuration: Debug Any CPU ------
+1>P2PServer.cs(15,14,15,26): warning CS0414: The field 'P2PServer.chainSynched' is assigned but its value is never used
+1>BCTestDemo -> C:\BCTest\BlockchainSamples-develop\P2PNetwork\BlockchainDemo\bin\Debug\netcoreapp2.0\BCTestDemo.dll
+1>Done building project "BCTestDemo.csproj".
+========== Rebuild All: 1 succeeded, 0 failed, 0 skipped ==========

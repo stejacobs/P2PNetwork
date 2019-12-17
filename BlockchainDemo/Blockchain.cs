@@ -92,6 +92,16 @@ namespace BCTestDemo
             return true;
         }
 
+        internal void ProcessPendingTransactions(string clip, string streetAddress, string city, string state, string zip, int propertyValue, string lender, string customer)
+        {
+            Block block = new Block(DateTime.Now, GetLatestBlock().Hash, PendingTransactions);
+            AddBlock(block);
+
+            PendingTransactions = new List<Transaction>();
+            CreateTransaction(new Transaction(clip, 
+                streetAddress, city, state, zip, propertyValue, lender, customer));
+        }
+
         public int GetBalance(string address)
         {
             int balance = 0;
@@ -103,23 +113,23 @@ namespace BCTestDemo
                         var transaction = Chain[i].Transactions[j];
                     
 
-                        if (transaction.FromAddress == address && transaction.ToAddress == address)
-                        {
-                            balance += transaction.Amount;
-                        }
-                        else
-                        {
+                        //if (transaction.customer  == address && transaction.ToAddress == address)
+                        //{
+                        //    balance += transaction.Amount;
+                        //}
+                        //else
+                        //{
 
-                            if (transaction.FromAddress == address)
-                            {
-                                balance -= transaction.Amount;
-                            }
+                        //    if (transaction.FromAddress == address)
+                        //    {
+                        //        balance -= transaction.Amount;
+                        //    }
 
-                            if (transaction.ToAddress == address)
-                            {
-                                balance += transaction.Amount;
-                            }
-                        }
+                        //    if (transaction.ToAddress == address)
+                        //    {
+                        //        balance += transaction.Amount;
+                        //    }
+                        //}
 
                     }
             }
